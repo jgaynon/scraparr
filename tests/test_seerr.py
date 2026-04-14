@@ -366,3 +366,33 @@ class TestDeprecationWarning:
         with caplog.at_level(logging.WARNING):
             warn_deprecated_connectors({'seerr': [{'url': 'x', 'api_key': 'k'}]})
         assert not any('deprecated' in r.message for r in caplog.records)
+
+    def test_warning_links_to_seerr_migration_docs(self, caplog):
+        with caplog.at_level(logging.WARNING):
+            warn_deprecated_connectors({'jellyseerr': {'url': 'x', 'api_key': 'k'}})
+        assert any('docs.seerr.dev' in r.message for r in caplog.records)
+
+    def test_same_url_in_legacy_and_seerr_logs_duplicate_scrape_warning(self, caplog):
+        with caplog.at_level(logging.WARNING):
+            warn_deprecated_connectors({
+                'jellyseerr': {'url': 'http://x:5055', 'api_key': 'k'},
+                'seerr': {'url': 'http://x:5055', 'api_key': 'k'},
+            })
+        assert any('scraped twice' in r.message for r in caplog.records)
+
+    def test_different_urls_do_not_log_duplicate_scrape_warning(self, caplog):
+        with caplog.at_level(logging.WARNING):
+            warn_deprecated_connectors({
+                'jellyseerr': {'url': 'http://legacy:5055', 'api_key': 'k'},
+                'seerr': {'url': 'http://new:5055', 'api_key': 'k'},
+            })
+        assert not any('scraped twice' in r.message for r in caplog.records)
+
+    def test_duplicate_scrape_warning_works_with_multi_instance_lists(self, caplog):
+        with caplog.at_level(logging.WARNING):
+            warn_deprecated_connectors({
+                'overseerr': [{'url': 'http://a:5055', 'api_key': 'k'},
+                              {'url': 'http://b:5055', 'api_key': 'k'}],
+                'seerr': [{'url': 'http://b:5055', 'api_key': 'k'}],
+            })
+        assert any('scraped twice' in r.message for r in caplog.records)

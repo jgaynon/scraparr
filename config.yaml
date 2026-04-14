@@ -80,9 +80,12 @@ readarr:
   # interval: 30 # Optional to set a different Interval in Seconds
   # detailed: true  # Get Data per Book
 
-# Unified Seerr connector (replaces jellyseerr and overseerr).
-# Use this for both Jellyseerr and Overseerr — they share the same v1 API.
-# Metrics are exposed with the `seerr_` prefix.
+# Jellyseerr and Overseerr have merged into Seerr (see
+# https://docs.seerr.dev/blog/seerr-release). Existing instances auto-migrate
+# on first startup and the v1 API is preserved, so point this at the same URL
+# and API key you were using before. Metrics are exported with the `seerr_`
+# prefix regardless of whether the upstream instance is still labelled
+# "jellyseerr" or "overseerr" on disk.
 seerr:
   url: http://seerr:5055
   api_key: key  # Or use: ${SEERR_API_KEY}
@@ -90,10 +93,12 @@ seerr:
   # interval: 30 # Optional to set a different Interval in Seconds
   # detailed: true  # Get Data per Request/Issue
 
-# DEPRECATED: the jellyseerr and overseerr sections still work but will be
-# removed in a future release. Migrate to `seerr:` above. NOTE: switching
-# renames Prometheus series (jellyseerr_*/overseerr_* -> seerr_*), so update
-# your Grafana dashboards and Prometheus alerts at the same time.
+# DEPRECATED: the jellyseerr and overseerr sections still work against
+# live Seerr instances but will be removed in a future release. Rename to
+# `seerr:` above. NOTE: switching renames Prometheus series
+# (jellyseerr_*/overseerr_* -> seerr_*), so update your Grafana dashboards
+# and Prometheus alerts at the same time. Do NOT keep both sections pointing
+# at the same URL — that scrapes the instance twice.
 # jellyseerr:
 #   url: http://jellyseerr:5055
 #   api_key: key  # Or use: ${JELLYSEERR_API_KEY}

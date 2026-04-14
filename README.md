@@ -16,18 +16,28 @@ Scraparr is a Prometheus exporter for the *arr suite (Sonarr, Radarr, Lidarr, et
 
 ## Migrating from Jellyseerr/Overseerr to Seerr
 
-With the upstream release of Seerr, the former `jellyseerr` and `overseerr`
-integrations have been unified under a single `seerr` connector. Use the
-`seerr:` section (or `SEERR_*` env vars) for both Jellyseerr and Overseerr
-instances — the v1 API is shared.
+Jellyseerr and Overseerr have [merged into a single project, Seerr](https://docs.seerr.dev/blog/seerr-release).
+Existing instances [auto-migrate on first startup](https://docs.seerr.dev/migration-guide) —
+there is no new service to deploy, your existing Jellyseerr or Overseerr
+container *becomes* Seerr. The v1 API is preserved, so the Scraparr exporter
+keeps working against the same URL and API key throughout.
 
-The legacy `jellyseerr`/`overseerr` sections still work but will log a
-deprecation warning at startup and be removed in a future release.
+Scraparr reflects this unification by providing a single `seerr` connector
+(and `SEERR_*` env vars) that replaces `jellyseerr` and `overseerr`. The legacy
+sections still work and will log a deprecation warning at startup; they will
+be removed in a future release.
 
-**Heads up — migrating renames Prometheus series:** `jellyseerr_request_total`
-and `overseerr_request_total` become `seerr_request_total`, and likewise for
-every other metric. Update your Grafana dashboards and Prometheus alerting
-rules at the same time you switch config, or you will lose visibility.
+### What to change in Scraparr
+
+1. Rename your `jellyseerr:` / `overseerr:` config section to `seerr:` (the
+   `url` and `api_key` stay the same).
+2. Remove the legacy section — if both `seerr:` and a legacy section point at
+   the same URL, the instance is scraped twice and exported under duplicate
+   metric names.
+3. Update your Grafana dashboards and Prometheus alert rules: every series is
+   renamed, e.g. `jellyseerr_request_total` and `overseerr_request_total`
+   become `seerr_request_total`. Nothing is translated automatically, so
+   missing this step will silently break your observability.
 
 ## Installation
 
