@@ -80,19 +80,27 @@ readarr:
   # interval: 30 # Optional to set a different Interval in Seconds
   # detailed: true  # Get Data per Book
 
-jellyseerr:
-  url: http://jellyseerr:5055
-  api_key: key  # Or use: ${JELLYSEERR_API_KEY}
-  # alias: jellyseerr # Optional to Differentiate between multiple Services
+# Unified Seerr connector (replaces jellyseerr and overseerr).
+# Use this for both Jellyseerr and Overseerr — they share the same v1 API.
+# Metrics are exposed with the `seerr_` prefix.
+seerr:
+  url: http://seerr:5055
+  api_key: key  # Or use: ${SEERR_API_KEY}
+  # alias: seerr # Optional to Differentiate between multiple Services
   # interval: 30 # Optional to set a different Interval in Seconds
   # detailed: true  # Get Data per Request/Issue
 
-overseerr:
-  url: http://overseerr:5055
-  api_key: key  # Or use: ${OVERSEERR_API_KEY}
-  # alias: overseerr # Optional to Differentiate between multiple Services
-  # interval: 30 # Optional to set a different Interval in Seconds
-  # detailed: true  # Get Data per Request/Issue
+# DEPRECATED: the jellyseerr and overseerr sections still work but will be
+# removed in a future release. Migrate to `seerr:` above. NOTE: switching
+# renames Prometheus series (jellyseerr_*/overseerr_* -> seerr_*), so update
+# your Grafana dashboards and Prometheus alerts at the same time.
+# jellyseerr:
+#   url: http://jellyseerr:5055
+#   api_key: key  # Or use: ${JELLYSEERR_API_KEY}
+
+# overseerr:
+#   url: http://overseerr:5055
+#   api_key: key  # Or use: ${OVERSEERR_API_KEY}
 
 whisparr:
   url: http://whisparr:6969

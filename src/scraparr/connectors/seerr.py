@@ -6,6 +6,7 @@ from concurrent.futures import ThreadPoolExecutor
 from dateutil.parser import parse
 from requests.exceptions import RequestException
 
+import scraparr.metrics.seerr as seerr_metrics
 from scraparr.connectors.module import ConnectorModule
 from scraparr.metrics.general import UP
 
@@ -337,3 +338,10 @@ class Seerr(ConnectorModule):
             self.update_issues(issues)
         else:
             self.metrics.ISSUE_COUNT.labels(self.alias).set(0)
+
+
+class Module(Seerr):
+    """Unified Seerr connector (replaces jellyseerr and overseerr)."""
+
+    def __init__(self, config):
+        Seerr.__init__(self, config, seerr_metrics, "seerr")

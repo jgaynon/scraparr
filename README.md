@@ -14,6 +14,21 @@ Scraparr is a Prometheus exporter for the *arr suite (Sonarr, Radarr, Lidarr, et
 - Lightweight and efficient
 - Built for extensibility
 
+## Migrating from Jellyseerr/Overseerr to Seerr
+
+With the upstream release of Seerr, the former `jellyseerr` and `overseerr`
+integrations have been unified under a single `seerr` connector. Use the
+`seerr:` section (or `SEERR_*` env vars) for both Jellyseerr and Overseerr
+instances — the v1 API is shared.
+
+The legacy `jellyseerr`/`overseerr` sections still work but will log a
+deprecation warning at startup and be removed in a future release.
+
+**Heads up — migrating renames Prometheus series:** `jellyseerr_request_total`
+and `overseerr_request_total` become `seerr_request_total`, and likewise for
+every other metric. Update your Grafana dashboards and Prometheus alerting
+rules at the same time you switch config, or you will lose visibility.
+
 ## Installation
 
 ### Local Setup

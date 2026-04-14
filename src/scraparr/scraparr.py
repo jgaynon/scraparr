@@ -28,6 +28,7 @@ from scraparr.config_loader import (
 )
 
 from scraparr.const import ACTIVE_CONNECTORS, BEAUTIFUL_CONNECTORS
+from scraparr.deprecation import warn_deprecated_connectors
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -90,6 +91,8 @@ def main():
     if not any(section in config_file for section in ACTIVE_CONNECTORS):
         logging.error("No configuration found for %s", BEAUTIFUL_CONNECTORS)
         sys.exit(1)
+
+    warn_deprecated_connectors(config_file)
 
     util.log_level = GENERAL.get('log_level', 'INFO').upper()
 

@@ -1,9 +1,12 @@
 """Tests for the parallel title fetching in seerr connector."""
 
+import logging
 from unittest.mock import patch, MagicMock
 from requests.exceptions import RequestException
 
-from scraparr.connectors.seerr import Seerr
+import scraparr.metrics.seerr as seerr_metrics
+from scraparr.connectors.seerr import Seerr, Module
+from scraparr.deprecation import warn_deprecated_connectors
 
 
 class TestFetchAllTitles:
@@ -314,3 +317,52 @@ class TestSkipTitleFetching:
 
         mock_fetch_titles.assert_called_once()
         assert issues[0]['title'] == 'Test Movie'
+
+
+class TestSeerrModule:
+    """The unified `seerr` Module wires up the new seerr_* metrics."""
+
+    def test_module_uses_seerr_metrics_and_service_name(self):
+        config = {
+            'url': 'http://test',
+            'api_key': 'key',
+            'api_version': 'v1',
+            'alias': 'unified',
+            'detailed': False,
+        }
+        module = Module(config)
+        assert module.service == 'seerr'
+        assert module.metrics is seerr_metrics
+
+    def test_seerr_metric_names_have_seerr_prefix(self):
+        # Every Gauge in the seerr metrics module should be named seerr_*.
+        gauges = [
+            seerr_metrics.LAST_SCRAPE,
+            seerr_metrics.REQUEST_COUNT,
+            seerr_metrics.ISSUE_COUNT,
+            seerr_metrics.USER_COUNT,
+        ]
+        for g in gauges:
+            assert g._name.startswith('seerr_'), g._name
+
+
+class TestDeprecationWarning:
+    """Legacy jellyseerr/overseerr config should log a deprecation warning."""
+
+    def test_jellyseerr_config_logs_warning(self, caplog):
+        with caplog.at_level(logging.WARNING):
+            warn_deprecated_connectors({'jellyseerr': [{'url': 'x', 'api_key': 'k'}]})
+        assert any('jellyseerr' in r.message and 'deprecated' in r.message
+                   for r in caplog.records)
+        assert any('seerr_' in r.message for r in caplog.records)
+
+    def test_overseerr_config_logs_warning(self, caplog):
+        with caplog.at_level(logging.WARNING):
+            warn_deprecated_connectors({'overseerr': [{'url': 'x', 'api_key': 'k'}]})
+        assert any('overseerr' in r.message and 'deprecated' in r.message
+                   for r in caplog.records)
+
+    def test_seerr_only_config_logs_nothing(self, caplog):
+        with caplog.at_level(logging.WARNING):
+            warn_deprecated_connectors({'seerr': [{'url': 'x', 'api_key': 'k'}]})
+        assert not any('deprecated' in r.message for r in caplog.records)
