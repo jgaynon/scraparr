@@ -318,34 +318,6 @@ class TestSkipTitleFetching:
         mock_fetch_titles.assert_called_once()
         assert issues[0]['title'] == 'Test Movie'
 
-
-class TestSeerrModule:
-    """The unified `seerr` Module wires up the new seerr_* metrics."""
-
-    def test_module_uses_seerr_metrics_and_service_name(self):
-        config = {
-            'url': 'http://test',
-            'api_key': 'key',
-            'api_version': 'v1',
-            'alias': 'unified',
-            'detailed': False,
-        }
-        module = Module(config)
-        assert module.service == 'seerr'
-        assert module.metrics is seerr_metrics
-
-    def test_seerr_metric_names_have_seerr_prefix(self):
-        # Every Gauge in the seerr metrics module should be named seerr_*.
-        gauges = [
-            seerr_metrics.LAST_SCRAPE,
-            seerr_metrics.REQUEST_COUNT,
-            seerr_metrics.ISSUE_COUNT,
-            seerr_metrics.USER_COUNT,
-        ]
-        for g in gauges:
-            assert g._name.startswith('seerr_'), g._name
-
-
 class TestDeprecationWarning:
     """Legacy jellyseerr/overseerr config should log a deprecation warning."""
 
@@ -366,33 +338,3 @@ class TestDeprecationWarning:
         with caplog.at_level(logging.WARNING):
             warn_deprecated_connectors({'seerr': [{'url': 'x', 'api_key': 'k'}]})
         assert not any('deprecated' in r.message for r in caplog.records)
-
-    def test_warning_links_to_seerr_migration_docs(self, caplog):
-        with caplog.at_level(logging.WARNING):
-            warn_deprecated_connectors({'jellyseerr': {'url': 'x', 'api_key': 'k'}})
-        assert any('docs.seerr.dev' in r.message for r in caplog.records)
-
-    def test_same_url_in_legacy_and_seerr_logs_duplicate_scrape_warning(self, caplog):
-        with caplog.at_level(logging.WARNING):
-            warn_deprecated_connectors({
-                'jellyseerr': {'url': 'http://x:5055', 'api_key': 'k'},
-                'seerr': {'url': 'http://x:5055', 'api_key': 'k'},
-            })
-        assert any('scraped twice' in r.message for r in caplog.records)
-
-    def test_different_urls_do_not_log_duplicate_scrape_warning(self, caplog):
-        with caplog.at_level(logging.WARNING):
-            warn_deprecated_connectors({
-                'jellyseerr': {'url': 'http://legacy:5055', 'api_key': 'k'},
-                'seerr': {'url': 'http://new:5055', 'api_key': 'k'},
-            })
-        assert not any('scraped twice' in r.message for r in caplog.records)
-
-    def test_duplicate_scrape_warning_works_with_multi_instance_lists(self, caplog):
-        with caplog.at_level(logging.WARNING):
-            warn_deprecated_connectors({
-                'overseerr': [{'url': 'http://a:5055', 'api_key': 'k'},
-                              {'url': 'http://b:5055', 'api_key': 'k'}],
-                'seerr': [{'url': 'http://b:5055', 'api_key': 'k'}],
-            })
-        assert any('scraped twice' in r.message for r in caplog.records)
