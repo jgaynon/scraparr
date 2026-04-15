@@ -14,30 +14,6 @@ Scraparr is a Prometheus exporter for the *arr suite (Sonarr, Radarr, Lidarr, et
 - Lightweight and efficient
 - Built for extensibility
 
-## Migrating from Jellyseerr/Overseerr to Seerr
-
-Jellyseerr and Overseerr have [merged into a single project, Seerr](https://docs.seerr.dev/blog/seerr-release).
-Existing instances [auto-migrate on first startup](https://docs.seerr.dev/migration-guide) —
-there is no new service to deploy, your existing Jellyseerr or Overseerr
-container *becomes* Seerr. The v1 API is preserved, so the Scraparr exporter
-keeps working against the same URL and API key throughout.
-
-Scraparr reflects this unification by providing a single `seerr` connector
-(and `SEERR_*` env vars) that replaces `jellyseerr` and `overseerr`. The legacy
-sections still work and will log a deprecation warning at startup; they will
-be removed in a future release.
-
-### What to change in Scraparr
-
-1. Rename your `jellyseerr:` / `overseerr:` config section to `seerr:` (the
-   `url` and `api_key` stay the same).
-2. Remove the legacy section — if both `seerr:` and a legacy section point at
-   the same URL, the instance is scraped twice and exported under duplicate
-   metric names.
-3. Update your Grafana dashboards and Prometheus alert rules: every series is
-   renamed, e.g. `jellyseerr_request_total` and `overseerr_request_total`
-   become `seerr_request_total`. Nothing is translated automatically, so
-   missing this step will silently break your observability.
 
 ## Installation
 
@@ -108,8 +84,18 @@ A Unraid Template is available in the Repo of jordan-dalby: https://github.com/j
 
 ## Configuration
 
+> [!IMPORTANT] 
+>
+> Jellyseerr and Overseerr have [merged into a single project, Seerr](https://docs.seerr.dev/blog/seerr-release).
+>
+> Scraparr now provides a corresponding unified `seerr` connector, replacing the `jellyseerr` and `overseerr` connectors. These legacy connectors still function but will log a deprecation warning at startup.
+>
+> Grafana dashboards, Prometheus alert rules etc will also need to be updated with corresponding metric name changes, as e.g. `jellyseerr_request_total` and `overseerr_request_total`
+>   becomes `seerr_request_total`.
+
+
 > [!NOTE]
-> If your using any v1 Version check the Readme of the [v1 Branch](https://github.com/thecfu/scraparr/tree/v1#readme)
+> If you are using Scraparr with a v1 service check the Readme of the [v1 Branch](https://github.com/thecfu/scraparr/tree/v1#readme)
 
 > [!WARNING]
 > If using the Docker Variant you need to use the IP or configure & use the extra_host `host.docker.internal:host-gateway`
